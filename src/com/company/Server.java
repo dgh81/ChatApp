@@ -13,27 +13,21 @@ public class Server {
     }
     
     public void startServer() {
-        
         try {
-            
             while (!serverSocket.isClosed()) {
-                
+                // ny klient connecter. husk dette er en "blocking service"
                 Socket socket = serverSocket.accept();
                 System.out.println("A new client has connected!");
                 ClientHandler clientHandler = new ClientHandler(socket);
                 
                 Thread thread = new Thread(clientHandler);
                 thread.start();
-                
             }
-            
         } catch (IOException e) {
-            
+            closeServerSocket();
         }
-        
     }
 
-    //TODO Denne bruges ikke?
     public void closeServerSocket() {
         try {
             if (serverSocket != null) {

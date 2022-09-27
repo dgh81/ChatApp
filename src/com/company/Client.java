@@ -18,49 +18,49 @@ public class Client {
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.username = username;
         } catch (IOException e) {
-            closeEverything(socket, bufferedReader, bufferedWriter);
+            closeClient(socket, bufferedReader, bufferedWriter);
         }
     }
 
+    // vi sender - bruger Writer - loop
     public void sendMessage() {
         try {
+            // bruges til "SERVER: username has entered the chat!" - køres kun 1 gang
             bufferedWriter.write(username);
             bufferedWriter.newLine();
             bufferedWriter.flush();
 
+            // bruges til resterende chats - loopes
             Scanner scanner = new Scanner(System.in);
-
             while (socket.isConnected()) {
+                //System.out.print(username + ": ");
                 String messageToSend = scanner.nextLine();
                 bufferedWriter.write(username + ": " + messageToSend);
                 bufferedWriter.newLine();
                 bufferedWriter.flush();
             }
         } catch (IOException e) {
-            closeEverything(socket, bufferedReader, bufferedWriter);
+            closeClient(socket, bufferedReader, bufferedWriter);
         }
     }
 
+    // vi modtager - bruger Reader - tråd / loop
     public void listenForMessage() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String msgFromGroupChat;
-
-                while(socket.isConnected()) {
-                    try {
-                        msgFromGroupChat = bufferedReader.readLine();
-                        System.out.println(msgFromGroupChat);
-                    } catch (IOException e) {
-                        closeEverything(socket, bufferedReader, bufferedWriter);
-                    }
+        // Køres i ny tråd, så vi kan lytte sideløbende med at sende. Runnable erstattet med lamda
+        new Thread(() -> {
+            String msgFromGroupChat;
+            while(socket.isConnected()) {
+                try {
+                    msgFromGroupChat = bufferedReader.readLine();
+                    System.out.println(msgFromGroupChat);
+                } catch (IOException e) {
+                    closeClient(socket, bufferedReader, bufferedWriter);
                 }
             }
         }).start();
     }
 
-    public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
-        //TODO can refactores:
+    public static void closeClient(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
         try {
             if (bufferedReader != null) {
                 bufferedReader.close();
@@ -77,7 +77,6 @@ public class Client {
     }
 
     public static void main(String[] args) throws IOException {
-
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter your username for the groupchat: ");
         String username = scanner.nextLine();
