@@ -22,22 +22,33 @@ public class Client {
         }
     }
 
+    public void createMessage(BufferedWriter bufferedWriter, String message) throws IOException {
+        bufferedWriter.write(message);
+        bufferedWriter.newLine();
+        bufferedWriter.flush();
+    }
+
     // vi sender - bruger Writer - loop
     public void sendMessage() {
         try {
             // bruges til "SERVER: username has entered the chat!" - køres kun 1 gang
-            bufferedWriter.write(username);
+
+            // REFAC TIL PPT
+/*            bufferedWriter.write(username);
             bufferedWriter.newLine();
-            bufferedWriter.flush();
+            bufferedWriter.flush();*/
+            createMessage(bufferedWriter, username);
 
             // bruges til resterende chats - loopes
             Scanner scanner = new Scanner(System.in);
             while (socket.isConnected()) {
                 //System.out.print(username + ": ");
+                System.out.print(">");
                 String messageToSend = scanner.nextLine();
-                bufferedWriter.write(username + ": " + messageToSend);
+/*                bufferedWriter.write(username + ": " + messageToSend);
                 bufferedWriter.newLine();
-                bufferedWriter.flush();
+                bufferedWriter.flush();*/
+                createMessage(bufferedWriter, username + ": " + messageToSend);
             }
         } catch (IOException e) {
             closeClient(socket, bufferedReader, bufferedWriter);
@@ -51,6 +62,7 @@ public class Client {
             String msgFromGroupChat;
             while(socket.isConnected()) {
                 try {
+                    System.out.print(">");
                     msgFromGroupChat = bufferedReader.readLine();
                     System.out.println(msgFromGroupChat);
                 } catch (IOException e) {
@@ -78,12 +90,21 @@ public class Client {
 
     public static void main(String[] args) throws IOException {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Enter your username for the groupchat: ");
-        String username = scanner.nextLine();
-        Socket socket = new Socket("localhost", 1234);
-        Client client = new Client(socket, username);
-        client.listenForMessage();
-        client.sendMessage();
+        String password;
+        System.out.println("password?");
+        password = scanner.nextLine();
+        if (password.equals("1234")) {
+            System.out.println("succes!");
+            System.out.println("Enter your username for the groupchat: ");
+            String username = scanner.nextLine();
+            //Socket socket = new Socket("localhost", 1234);
+            Socket socket = new Socket("192.168.1.2", 1234);
+            Client client = new Client(socket, username);
+            client.listenForMessage();
+            client.sendMessage();
+        } else {
+            System.out.println("du kan ikke komme ind");
+        }
     }
 
 }
